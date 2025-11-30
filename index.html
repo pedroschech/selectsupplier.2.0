@@ -1,0 +1,1103 @@
+```html
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Indusmart - Sistema de Seleção de Fornecedores (Protótipo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fa;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --accent:#0f172a;
+    --success:#10b981;
+    --danger:#ef4444;
+    --sw-yellow:#fff7cc;
+    --sw-red:#ffecec;
+    --sw-green:#e9fff0;
+    --sw-blue:#e8f0ff;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{margin:0;background:var(--bg);color:var(--accent);padding:18px;}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+  h1{margin:0;font-size:18px;}
+  .container{display:flex;gap:18px;}
+  nav{width:220px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(15,23,42,0.06);}
+  nav button{display:block;width:100%;text-align:left;padding:10px;border:0;background:transparent;border-radius:6px;margin-bottom:6px;cursor:pointer;font-weight:600;}
+  nav button.active{background:#eef2ff;color:#0b1220;}
+  main{flex:1;}
+  .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-bottom:14px;}
+  .flex{display:flex;gap:12px;align-items:center;}
+  .row{display:flex;gap:12px;margin-bottom:12px;}
+  input,select,textarea{padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:white;width:100%;}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px;}
+  .small{font-size:13px;color:var(--muted);}
+  .btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600;}
+  .btn.primary{background:#3b82f6;color:white;}
+  .btn.danger{background:var(--danger);color:white;}
+  .btn.ghost{background:transparent;border:1px solid #e6e9ef;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{padding:10px;border-bottom:1px solid #f0f2f5;text-align:left;font-size:14px;}
+  .muted{color:var(--muted);font-size:13px;}
+  .pill{padding:6px 8px;border-radius:999px;background:#f1f5f9;font-weight:600;font-size:13px;}
+  .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .swot-block{padding:12px;border-radius:8px;min-height:86px;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;}
+  .swot-title{font-weight:700;color:#000;margin-bottom:6px;}
+  .project-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .project-card{padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #eef2ff;}
+  .bar{height:10px;border-radius:6px;background:#f1f5f9;overflow:hidden;}
+  .bar > i{display:block;height:100%;background:#3b82f6;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .small-muted{font-size:12px;color:var(--muted);}
+  .supplier-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #f0f2f5;}
+  .label-inline{font-weight:600;font-size:13px;}
+  .right{margin-left:auto;}
+  .flex-col{display:flex;flex-direction:column;gap:8px;}
+  .top-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;}
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:999;}
+  .modal .card{width:760px;max-width:100%;}
+  .hidden{display:none;}
+  /* responsive */
+  @media(max-width:880px){nav{display:none}.container{flex-direction:column;} header{flex-direction:column;align-items:flex-start;gap:8px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Indusmart — Protótipo de Seleção de Fornecedores</h1>
+  <div class="small-muted">Protótipo local (dados persistem no seu navegador)</div>
+</header>
+
+<div class="container">
+  <nav id="nav">
+    <button class="active" data-view="dashboard">Dashboard</button>
+    <button data-view="projetos">Projetos</button>
+    <button data-view="orcamentistas">Orçamentistas</button>
+    <button data-view="clientes">Clientes</button>
+    <button data-view="indices">Índices</button>
+    <button data-view="fornecedores">Fornecedores</button>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="card view">
+      <div class="flex" style="justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h2 style="margin:0 0 8px 0">Dashboard</h2>
+          <div class="small-muted">Visão geral rápida</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn ghost" id="exportAllPDF">Exportar relatório resumido (PDF)</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;">
+        <div class="card">
+          <div class="small-muted">Projetos Totais</div>
+          <div style="font-size:28px;font-weight:700;" id="dashTotalProjects">0</div>
+        </div>
+        <div class="card">
+          <div class="small-muted">Projetos Ativos</div>
+          <div style="font-size:28px;font-weight:700;" id="dashActive">0</div>
+        </div>
+        <div class="card">
+          <div class="small-muted">Projetos Concluídos</div>
+          <div style="font-size:28px;font-weight:700;" id="dashCompleted">0</div>
+        </div>
+        <div class="card">
+          <div class="small-muted">Orçamentistas</div>
+          <div style="font-size:28px;font-weight:700;" id="dashOrcCount">0</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <h3 style="margin:0 0 8px 0;">Indicadores rápidos</h3>
+        <div class="row">
+          <div style="flex:1;">
+            <label>Projetos por prioridade</label>
+            <div id="priorityBreakdown" class="muted small"></div>
+          </div>
+          <div style="flex:1;">
+            <label>Projetos por orçamentista</label>
+            <div id="orcBreakdown" class="muted small"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJETOS -->
+    <section id="projetos" class="view hidden">
+      <div class="card">
+        <div class="flex" style="justify-content:space-between;">
+          <div>
+            <h2 style="margin:0 0 6px 0">Projetos</h2>
+            <div class="small-muted">Crie, edite e gerencie projetos</div>
+          </div>
+          <div class="flex">
+            <button class="btn primary" id="btnNewProject">+ Novo Projeto</button>
+            <button class="btn ghost" id="btnRefresh">Atualizar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="filters">
+            <select id="filterOrc" style="min-width:160px"><option value="">Filtrar por Orçamentista</option></select>
+            <select id="filterClient" style="min-width:160px"><option value="">Filtrar por Cliente</option></select>
+            <select id="filterPriority"><option value="">Prioridade</option><option>Baixa</option><option>Média</option><option>Alta</option></select>
+            <select id="filterStatus"><option value="">Status</option><option>A iniciar</option><option>Em andamento</option><option>Concluído</option></select>
+            <button class="btn ghost" id="clearFilters">Limpar</button>
+          </div>
+          <div>
+            <span class="small-muted">Ordenar por</span>
+            <select id="orderBy">
+              <option value="updated">Última atualização</option>
+              <option value="priority">Prioridade</option>
+              <option value="client">Cliente</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="projectCards" class="project-list"></div>
+      </div>
+    </section>
+
+    <!-- ORÇAMENTISTAS -->
+    <section id="orcamentistas" class="view hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h2 style="margin:0 0 6px 0">Orçamentistas</h2>
+            <div class="small-muted">Adicionar, editar e excluir orçamentistas</div>
+          </div>
+          <div>
+            <button class="btn primary" id="btnAddOrc">+ Novo Orçamentista</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <table id="orcTable">
+          <thead><tr><th>Nome</th><th class="small-muted">Ações</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="clientes" class="view hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h2 style="margin:0 0 6px 0">Clientes</h2>
+            <div class="small-muted">Adicionar, editar e excluir clientes (fictícios)</div>
+          </div>
+          <div>
+            <button class="btn primary" id="btnAddClient">+ Novo Cliente</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <table id="clientTable">
+          <thead><tr><th>Nome</th><th class="small-muted">Ações</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ÍNDICES -->
+    <section id="indices" class="view hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h2 style="margin:0 0 6px 0">Índices</h2>
+            <div class="small-muted">Adicione os índices que serão usados no cálculo (peso em %)</div>
+          </div>
+          <div>
+            <button class="btn primary" id="btnAddIndex">+ Novo Índice</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <table id="indexTable">
+          <thead><tr><th>Nome do Índice</th><th>Peso (%)</th><th class="small-muted">Ações</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="small-muted" style="margin-top:8px;">Observação: ao criar/editar índices, o sistema permitirá no máximo uma soma de 100% no momento do cálculo do projeto.</div>
+      </div>
+    </section>
+
+    <!-- FORNECEDORES (lista sample) -->
+    <section id="fornecedores" class="view hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;">
+          <div>
+            <h2 style="margin:0 0 6px 0">Fornecedores</h2>
+            <div class="small-muted">Lista de fornecedores de exemplo (pontuações automáticas)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <table id="supplierTable">
+          <thead><tr><th>Nome</th><th class="small-muted">Descrição</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal: Orçamentista / Client / Index / Project -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div>
+        <h3 id="modalTitle" style="margin:0;"></h3>
+        <div class="small-muted" id="modalSubtitle"></div>
+      </div>
+      <div>
+        <button class="btn ghost" id="modalClose">Fechar</button>
+      </div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Templates (hidden) -->
+<template id="projectCardTpl">
+  <div class="project-card">
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div style="font-weight:700;font-size:15px;" data-title></div>
+      <div class="pill" style="margin-left:auto;" data-priority></div>
+    </div>
+    <div class="small-muted" style="margin-top:6px;" data-meta></div>
+    <div style="margin-top:10px;">
+      <div class="small-muted">Status</div>
+      <select style="margin-top:6px;width:100%;" data-status>
+        <option>A iniciar</option><option>Em andamento</option><option>Concluído</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;justify-content:space-between;">
+      <div style="display:flex;gap:6px;">
+        <button class="btn ghost" data-action="view">Ver</button>
+        <button class="btn ghost" data-action="edit">Editar</button>
+      </div>
+      <div>
+        <button class="btn danger" data-action="delete">Excluir</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Include html2canvas and jsPDF via CDN for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/*
+  Protótipo completo (single-file).
+  - Persistência via localStorage
+  - CRUD: Orçamentistas, Clientes, Índices
+  - Projetos com: orçamentista, prioridade, prazo, cliente, fornecedores selecionados, status, SWOT opcional (4 blocos com cores)
+  - Exportar resumo de projeto em PDF
+  - Limite: soma dos pesos dos índices <= 100 (validação ao calcular)
+  - Removido qualquer "dica" de login (não existe)
+  - Inicializa com 4 orçamentistas e 15 clientes, alguns índices e fornecedores de exemplo
+*/
+
+const LS = {
+  ORC: 'indus_orc',
+  CLIENTS: 'indus_clients',
+  INDICES: 'indus_indices',
+  PROJECTS: 'indus_projects',
+  SUPPLIERS: 'indus_suppliers'
+};
+
+const defaultOrc = [
+  { id: genId(), name: 'Bruno Ullmann' },
+  { id: genId(), name: 'Lucas Sitieni' },
+  { id: genId(), name: 'Pedro Schech' },
+  { id: genId(), name: 'Rafael Hirt' }
+];
+
+const defaultClients = [
+  "Astra Engenharia","Beta Soluções","Citra Fabril","Delta Componentes","Epsilon Metalúrgica",
+  "Fenix Sistemas","Gama Indústria","Helix Tech","Ilex Fornecimentos","Juno Serviços",
+  "Kappa Materiais","Lambda Distribuição","Mira Projetos","Nexa Compras","Orya Logística",
+  "Penta Produção","Quara Montagens","Riva Equipamentos"
+].map(n=>({id:genId(),name:n}));
+
+const defaultIndices = [
+  { id: genId(), name:'Qualidade', weight:40 },
+  { id: genId(), name:'Preço', weight:30 },
+  { id: genId(), name:'Prazo', weight:30 }
+];
+
+const defaultSuppliers = [
+  {id:genId(), name:'Fornec A', desc:'Especialista em peças de precisão', scores:{}},
+  {id:genId(), name:'Fornec B', desc:'Custo competitivo, entrega média', scores:{}},
+  {id:genId(), name:'Fornec C', desc:'Alta capacidade produtiva', scores:{}},
+  {id:genId(), name:'Fornec D', desc:'Pequeno porte, alta qualidade', scores:{}}
+];
+
+// Utils
+function genId(){ return 'id-'+Math.random().toString(36).slice(2,9); }
+function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+function load(key, fallback){ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+function nowISO(){ return new Date().toISOString(); }
+
+/* Init storage if empty */
+if(!localStorage.getItem(LS.ORC)) save(LS.ORC, defaultOrc);
+if(!localStorage.getItem(LS.CLIENTS)) save(LS.CLIENTS, defaultClients);
+if(!localStorage.getItem(LS.INDICES)) save(LS.INDICES, defaultIndices);
+if(!localStorage.getItem(LS.SUPPLIERS)) {
+  // populate random scores for suppliers based on indices
+  const indices = load(LS.INDICES, []);
+  defaultSuppliers.forEach(s=>{
+    indices.forEach(idx=>{
+      s.scores[idx.id] = Math.floor(30 + Math.random()*70); // 30-99
+    });
+  });
+  save(LS.SUPPLIERS, defaultSuppliers);
+}
+if(!localStorage.getItem(LS.PROJECTS)) save(LS.PROJECTS, []);
+
+/* App state */
+const state = {
+  view: 'dashboard',
+  orc: load(LS.ORC, []),
+  clients: load(LS.CLIENTS, []),
+  indices: load(LS.INDICES, []),
+  suppliers: load(LS.SUPPLIERS, []),
+  projects: load(LS.PROJECTS, [])
+};
+
+/* DOM refs */
+const nav = document.getElementById('nav');
+const views = document.querySelectorAll('.view');
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modalTitle');
+const modalSubtitle = document.getElementById('modalSubtitle');
+const modalBody = document.getElementById('modalBody');
+const modalClose = document.getElementById('modalClose');
+
+/* Navigation */
+nav.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  [...nav.querySelectorAll('button')].forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  showView(btn.dataset.view);
+});
+
+function showView(name){
+  state.view = name;
+  views.forEach(v=>{
+    if(v.id === name) v.classList.remove('hidden');
+    else v.classList.add('hidden');
+  });
+  refreshAll();
+}
+
+/* Modal control */
+function openModal(title, subtitle, contentHtml){
+  modalTitle.textContent = title;
+  modalSubtitle.textContent = subtitle||'';
+  modalBody.innerHTML = contentHtml;
+  modal.classList.remove('hidden');
+}
+function closeModal(){
+  modal.classList.add('hidden');
+  modalBody.innerHTML = '';
+}
+
+/* Close modal */
+modalClose.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+
+/* Initialize UI */
+document.getElementById('btnAddOrc').addEventListener('click', ()=> openOrcForm());
+document.getElementById('btnAddClient').addEventListener('click', ()=> openClientForm());
+document.getElementById('btnAddIndex').addEventListener('click', ()=> openIndexForm());
+document.getElementById('btnNewProject').addEventListener('click', ()=> openProjectForm());
+document.getElementById('btnRefresh').addEventListener('click', refreshAll);
+document.getElementById('clearFilters').addEventListener('click', ()=>{document.getElementById('filterOrc').value='';document.getElementById('filterClient').value='';document.getElementById('filterPriority').value='';document.getElementById('filterStatus').value='';refreshProjects();});
+document.getElementById('exportAllPDF').addEventListener('click', exportDashboardPDF);
+
+/* Populate selects for filters */
+function populateFilterSelects(){
+  const fOrc = document.getElementById('filterOrc');
+  const fClient = document.getElementById('filterClient');
+  fOrc.innerHTML = '<option value="">Filtrar por Orçamentista</option>';
+  state.orc.forEach(o=>{ const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;fOrc.appendChild(opt); });
+  fClient.innerHTML = '<option value="">Filtrar por Cliente</option>';
+  state.clients.forEach(c=>{ const opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name;fClient.appendChild(opt); });
+  fOrc.onchange = refreshProjects;
+  fClient.onchange = refreshProjects;
+  document.getElementById('filterPriority').onchange = refreshProjects;
+  document.getElementById('filterStatus').onchange = refreshProjects;
+  document.getElementById('orderBy').onchange = refreshProjects;
+}
+
+/* Renderers */
+function refreshAll(){
+  state.orc = load(LS.ORC, []);
+  state.clients = load(LS.CLIENTS, []);
+  state.indices = load(LS.INDICES, []);
+  state.suppliers = load(LS.SUPPLIERS, []);
+  state.projects = load(LS.PROJECTS, []);
+  renderOrcTable();
+  renderClientTable();
+  renderIndexTable();
+  renderSupplierTable();
+  populateFilterSelects();
+  refreshProjects();
+  refreshDashboard();
+}
+
+/* Orçamentistas CRUD */
+function renderOrcTable(){
+  const tbody = document.querySelector('#orcTable tbody');
+  tbody.innerHTML = '';
+  state.orc.forEach(o=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.name}</td><td>
+      <button class="btn ghost" data-id="${o.id}" data-action="edit-orc">Editar</button>
+      <button class="btn danger" data-id="${o.id}" data-action="del-orc">Excluir</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button[data-action="edit-orc"]').forEach(btn=>btn.addEventListener('click', (e)=> openOrcForm(btn.dataset.id)));
+  tbody.querySelectorAll('button[data-action="del-orc"]').forEach(btn=>btn.addEventListener('click', (e)=> { if(confirm('Excluir orçamentista?')){ state.orc = state.orc.filter(x=>x.id!==btn.dataset.id); save(LS.ORC, state.orc); refreshAll(); }}));
+}
+
+function openOrcForm(id){
+  const isEdit = !!id;
+  const data = isEdit ? state.orc.find(x=>x.id===id) : {id:genId(), name:''};
+  openModal(isEdit ? 'Editar Orçamentista' : 'Novo Orçamentista', '', `
+    <div>
+      <label>Nome</label>
+      <input id="orcName" value="${data.name.replaceAll('"','&quot;')}" />
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button class="btn ghost" id="cancelOrc">Cancelar</button>
+        <button class="btn primary" id="saveOrc">Salvar</button>
+      </div>
+    </div>
+  `);
+  document.getElementById('cancelOrc').onclick = closeModal;
+  document.getElementById('saveOrc').onclick = ()=>{
+    const name = document.getElementById('orcName').value.trim();
+    if(!name){ alert('Nome obrigatório'); return;}
+    if(isEdit){
+      state.orc = state.orc.map(x=> x.id===id ? {...x, name} : x);
+    } else {
+      state.orc.push({id:data.id, name});
+    }
+    save(LS.ORC, state.orc);
+    closeModal();
+    refreshAll();
+  };
+}
+
+/* Clients CRUD */
+function renderClientTable(){
+  const tbody = document.querySelector('#clientTable tbody');
+  tbody.innerHTML = '';
+  state.clients.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.name}</td><td>
+      <button class="btn ghost" data-id="${c.id}" data-action="edit-client">Editar</button>
+      <button class="btn danger" data-id="${c.id}" data-action="del-client">Excluir</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button[data-action="edit-client"]').forEach(btn=>btn.addEventListener('click', ()=> openClientForm(btn.dataset.id)));
+  tbody.querySelectorAll('button[data-action="del-client"]').forEach(btn=>btn.addEventListener('click', ()=> { if(confirm('Excluir cliente?')){ state.clients = state.clients.filter(x=>x.id!==btn.dataset.id); save(LS.CLIENTS, state.clients); refreshAll(); }}));
+}
+
+function openClientForm(id){
+  const isEdit = !!id;
+  const data = isEdit ? state.clients.find(x=>x.id===id) : {id:genId(), name:''};
+  openModal(isEdit ? 'Editar Cliente' : 'Novo Cliente', '', `
+    <div>
+      <label>Nome do Cliente</label>
+      <input id="clientName" value="${data.name.replaceAll('"','&quot;')}" />
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button class="btn ghost" id="cancelClient">Cancelar</button>
+        <button class="btn primary" id="saveClient">Salvar</button>
+      </div>
+    </div>
+  `);
+  document.getElementById('cancelClient').onclick = closeModal;
+  document.getElementById('saveClient').onclick = ()=>{
+    const name = document.getElementById('clientName').value.trim();
+    if(!name){ alert('Nome obrigatório'); return;}
+    if(isEdit){
+      state.clients = state.clients.map(x=> x.id===id ? {...x, name} : x);
+    } else {
+      state.clients.push({id:data.id, name});
+    }
+    save(LS.CLIENTS, state.clients);
+    closeModal();
+    refreshAll();
+  };
+}
+
+/* Indices CRUD */
+function renderIndexTable(){
+  const tbody = document.querySelector('#indexTable tbody');
+  tbody.innerHTML = '';
+  state.indices.forEach(i=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i.name}</td><td>${i.weight}</td><td>
+      <button class="btn ghost" data-id="${i.id}" data-action="edit-index">Editar</button>
+      <button class="btn danger" data-id="${i.id}" data-action="del-index">Excluir</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button[data-action="edit-index"]').forEach(btn=>btn.addEventListener('click', ()=> openIndexForm(btn.dataset.id)));
+  tbody.querySelectorAll('button[data-action="del-index"]').forEach(btn=>btn.addEventListener('click', ()=> { if(confirm('Excluir índice?')){ state.indices = state.indices.filter(x=>x.id!==btn.dataset.id); save(LS.INDICES, state.indices); refreshAll(); }}));
+}
+
+function openIndexForm(id){
+  const isEdit = !!id;
+  const data = isEdit ? state.indices.find(x=>x.id===id) : {id:genId(), name:'', weight:0};
+  openModal(isEdit ? 'Editar Índice' : 'Novo Índice', '', `
+    <div>
+      <label>Nome do Índice</label>
+      <input id="indexName" value="${data.name.replaceAll('"','&quot;')}" />
+      <label>Peso (%)</label>
+      <input id="indexWeight" type="number" min="0" max="100" value="${data.weight}" />
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button class="btn ghost" id="cancelIndex">Cancelar</button>
+        <button class="btn primary" id="saveIndex">Salvar</button>
+      </div>
+    </div>
+  `);
+  document.getElementById('cancelIndex').onclick = closeModal;
+  document.getElementById('saveIndex').onclick = ()=>{
+    const name = document.getElementById('indexName').value.trim();
+    const weight = parseFloat(document.getElementById('indexWeight').value)||0;
+    if(!name){ alert('Nome obrigatório'); return; }
+    if(weight < 0 || weight > 100){ alert('Peso deve ser entre 0 e 100'); return; }
+    if(isEdit){
+      state.indices = state.indices.map(x=> x.id===id ? {...x, name, weight} : x);
+    } else {
+      state.indices.push({id:data.id, name, weight});
+    }
+    save(LS.INDICES, state.indices);
+    closeModal();
+    refreshAll();
+  };
+}
+
+/* Suppliers listing (readonly in this protótipo) */
+function renderSupplierTable(){
+  const tbody = document.querySelector('#supplierTable tbody');
+  tbody.innerHTML = '';
+  state.suppliers.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.name}</td><td>${s.desc}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* Projects - create / edit / list / view */
+function openProjectForm(projectId){
+  const isEdit = !!projectId;
+  const project = isEdit ? state.projects.find(p=>p.id===projectId) : {
+    id: genId(),
+    title: '',
+    orcId: '',
+    priority: 'Média',
+    clientId: '',
+    deadline: '',
+    status: 'A iniciar',
+    suppliers: state.suppliers.map(s=>s.id), // default include all
+    swot: {enabled:false, S:'', O:'', W:'', T:''},
+    createdAt: nowISO(),
+    updatedAt: nowISO()
+  };
+
+  // Build indices input table
+  const indicesHtml = state.indices.map(idx=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <div style="flex:1;"><label>${idx.name}</label></div>
+      <div style="width:140px;"><input class="idx-weight" data-id="${idx.id}" type="number" min="0" max="100" value="${idx.weight}" /></div>
+    </div>
+  `).join('');
+
+  // Suppliers multiselect with checkboxes
+  const suppliersHtml = state.suppliers.map(s=>`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" class="sup-chk" data-id="${s.id}" ${project.suppliers.includes(s.id) ? 'checked' : ''}/>
+      <div><strong>${s.name}</strong><div class="small-muted">${s.desc}</div></div>
+    </div>
+  `).join('');
+
+  openModal(isEdit ? 'Editar Projeto' : 'Novo Projeto', '', `
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:12px;">
+      <div>
+        <label>Título do Projeto</label>
+        <input id="projTitle" value="${(project.title||'').replaceAll('"','&quot;')}" />
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <div style="flex:1;">
+            <label>Orçamentista</label>
+            <select id="projOrc">${state.orc.map(o=>`<option value="${o.id}" ${o.id===project.orcId?'selected':''}>${o.name}</option>`).join('')}</select>
+          </div>
+          <div style="width:140px;">
+            <label>Prioridade</label>
+            <select id="projPriority">
+              <option ${project.priority==='Baixa'?'selected':''}>Baixa</option>
+              <option ${project.priority==='Média'?'selected':''}>Média</option>
+              <option ${project.priority==='Alta'?'selected':''}>Alta</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <div style="flex:1;">
+            <label>Cliente</label>
+            <select id="projClient">
+              <option value="">--Selecione--</option>
+              ${state.clients.map(c=>`<option value="${c.id}" ${c.id===project.clientId?'selected':''}>${c.name}</option>`).join('')}
+            </select>
+          </div>
+          <div style="width:160px;">
+            <label>Prazo estimado</label>
+            <input id="projDeadline" type="date" value="${project.deadline||''}" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label>Índices (pesos)</label>
+          <div style="padding:10px;border-radius:8px;background:#fff;">
+            ${indicesHtml || '<div class="small-muted">Nenhum índice cadastrado. Adicione índices na aba Índices.</div>'}
+          </div>
+          <div class="small-muted" style="margin-top:6px;">Ao calcular, a soma dos pesos não pode ultrapassar 100% (você será avisado).</div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label>Fornecedores incluídos</label>
+          <div style="padding:10px;border-radius:8px;background:#fff;max-height:200px;overflow:auto;">${suppliersHtml}</div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label>Status</label>
+          <select id="projStatus">
+            <option ${project.status==='A iniciar'?'selected':''}>A iniciar</option>
+            <option ${project.status==='Em andamento'?'selected':''}>Em andamento</option>
+            <option ${project.status==='Concluído'?'selected':''}>Concluído</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div>
+        <label>Matriz SWOT (opcional)</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <input type="checkbox" id="swotEnabled" ${project.swot?.enabled ? 'checked' : ''} />
+          <div class="small-muted">Ativar análise FOFA para este projeto</div>
+        </div>
+
+        <div id="swotArea" style="display:${project.swot?.enabled ? 'block' : 'none'};">
+          <div class="swot-grid">
+            <div class="swot-block" style="background:var(--sw-yellow)"><div class="swot-title">Forças</div><textarea id="swotS" rows="3" style="width:100%;">${(project.swot.S||'').replaceAll('"','&quot;')}</textarea></div>
+            <div class="swot-block" style="background:var(--sw-red)"><div class="swot-title">Oportunidades</div><textarea id="swotO" rows="3" style="width:100%;">${(project.swot.O||'').replaceAll('"','&quot;')}</textarea></div>
+            <div class="swot-block" style="background:var(--sw-green)"><div class="swot-title">Fraquezas</div><textarea id="swotW" rows="3" style="width:100%;">${(project.swot.W||'').replaceAll('"','&quot;')}</textarea></div>
+            <div class="swot-block" style="background:var(--sw-blue)"><div class="swot-title">Ameaças</div><textarea id="swotT" rows="3" style="width:100%;">${(project.swot.T||'').replaceAll('"','&quot;')}</textarea></div>
+          </div>
+          <div class="small-muted" style="margin-top:6px;">Fonte: preta (padrão)</div>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+          <button class="btn ghost" id="cancelProj">Cancelar</button>
+          <button class="btn primary" id="calcProj">Calcular & Salvar</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // events inside modal
+  document.getElementById('swotEnabled').addEventListener('change', (e)=> {
+    document.getElementById('swotArea').style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  document.getElementById('cancelProj').onclick = closeModal;
+  document.getElementById('calcProj').onclick = ()=> {
+    // collect weights and validate sum <= 100
+    const idxWeights = {};
+    const weightInputs = modalBody.querySelectorAll('.idx-weight');
+    let sum = 0;
+    weightInputs.forEach(inp=>{
+      const val = parseFloat(inp.value)||0;
+      sum += val;
+      idxWeights[inp.dataset.id] = val;
+    });
+    if(sum > 100){
+      alert('A soma dos pesos dos índices excede 100%. Ajuste os pesos antes de calcular.');
+      return;
+    }
+
+    // collect suppliers
+    const supChecked = Array.from(modalBody.querySelectorAll('.sup-chk')).filter(c=>c.checked).map(c=>c.dataset.id);
+    if(supChecked.length === 0){ if(!confirm('Nenhum fornecedor selecionado. Deseja prosseguir?')) return; }
+
+    // save project
+    const title = document.getElementById('projTitle').value.trim() || '(sem título)';
+    const orcId = document.getElementById('projOrc').value;
+    const priority = document.getElementById('projPriority').value;
+    const clientId = document.getElementById('projClient').value;
+    const deadline = document.getElementById('projDeadline').value;
+    const status = document.getElementById('projStatus').value;
+    const swotEnabled = document.getElementById('swotEnabled').checked;
+    const swot = {
+      enabled: swotEnabled,
+      S: swotEnabled ? (document.getElementById('swotS').value||'') : '',
+      O: swotEnabled ? (document.getElementById('swotO').value||'') : '',
+      W: swotEnabled ? (document.getElementById('swotW').value||'') : '',
+      T: swotEnabled ? (document.getElementById('swotT').value||'') : ''
+    };
+
+    const projectObj = {
+      id: project.id,
+      title, orcId, priority, clientId, deadline, status,
+      suppliers: supChecked,
+      indexWeights: idxWeights,
+      swot,
+      createdAt: project.createdAt || nowISO(),
+      updatedAt: nowISO()
+    };
+
+    // compute scores for suppliers based on indices and stored supplier scores
+    // Weighted average: sum(weight_i * score_i)/sum(weights)
+    projectObj.supplierResults = computeSupplierResults(projectObj);
+
+    // save/replace
+    if(isEdit){
+      state.projects = state.projects.map(p=> p.id===project.id ? projectObj : p);
+    } else {
+      state.projects.push(projectObj);
+    }
+    save(LS.PROJECTS, state.projects);
+    closeModal();
+    refreshAll();
+  };
+}
+
+/* Compute supplier results */
+function computeSupplierResults(project){
+  const indices = state.indices;
+  const weights = project.indexWeights || {};
+  const totalWeight = Object.values(weights).reduce((a,b)=>a+(parseFloat(b)||0),0) || 0;
+  const results = [];
+  project.suppliers.forEach(sid=>{
+    const supplier = state.suppliers.find(s=>s.id===sid);
+    if(!supplier) return;
+    // compute weighted score
+    let weightedSum = 0;
+    let activeWeights = 0;
+    indices.forEach(idx=>{
+      const w = parseFloat(weights[idx.id])||0;
+      if(w>0){
+        const score = supplier.scores && supplier.scores[idx.id] ? supplier.scores[idx.id] : 50;
+        weightedSum += (w * score);
+        activeWeights += w;
+      }
+    });
+    const final = activeWeights > 0 ? Math.round(weightedSum / activeWeights) : Math.round(supplier.overall || 50);
+    results.push({supplierId:sid, supplierName: supplier.name, score: final, perIndex: supplier.scores});
+  });
+  // sort desc by score
+  results.sort((a,b)=>b.score - a.score);
+  return results;
+}
+
+/* Projects list rendering with filters */
+function refreshProjects(){
+  state.projects = load(LS.PROJECTS, []);
+  const container = document.getElementById('projectCards');
+  container.innerHTML = '';
+  // apply filters
+  const fOrc = document.getElementById('filterOrc').value;
+  const fClient = document.getElementById('filterClient').value;
+  const fPriority = document.getElementById('filterPriority').value;
+  const fStatus = document.getElementById('filterStatus').value;
+  let filtered = [...state.projects];
+  if(fOrc) filtered = filtered.filter(p=>p.orcId===fOrc);
+  if(fClient) filtered = filtered.filter(p=>p.clientId===fClient);
+  if(fPriority) filtered = filtered.filter(p=>p.priority===fPriority);
+  if(fStatus) filtered = filtered.filter(p=>p.status===fStatus);
+  const orderBy = document.getElementById('orderBy').value;
+  if(orderBy==='priority') filtered.sort((a,b)=> priorityRank(b.priority) - priorityRank(a.priority));
+  else if(orderBy==='client') filtered.sort((a,b)=> (getClientName(a.clientId)||'').localeCompare(getClientName(b.clientId)||''));
+  else filtered.sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  filtered.forEach(proj=>{
+    const tpl = document.getElementById('projectCardTpl').content.cloneNode(true);
+    tpl.querySelector('[data-title]').textContent = proj.title;
+    tpl.querySelector('[data-priority]').textContent = proj.priority;
+    tpl.querySelector('[data-meta]').textContent = `${getClientName(proj.clientId)||'Cliente não definido'} • Orçamentista: ${getOrcName(proj.orcId)||'--'}`;
+    const statusSelect = tpl.querySelector('[data-status]');
+    statusSelect.value = proj.status;
+    statusSelect.addEventListener('change', ()=> {
+      proj.status = statusSelect.value;
+      proj.updatedAt = nowISO();
+      save(LS.PROJECTS, state.projects);
+      refreshAll();
+    });
+    tpl.querySelector('[data-action="view"]').addEventListener('click', ()=> viewProject(proj.id));
+    tpl.querySelector('[data-action="edit"]').addEventListener('click', ()=> openProjectForm(proj.id));
+    tpl.querySelector('[data-action="delete"]').addEventListener('click', ()=> { if(confirm('Excluir projeto?')){ state.projects = state.projects.filter(x=>x.id!==proj.id); save(LS.PROJECTS, state.projects); refreshAll(); }});
+    container.appendChild(tpl);
+  });
+
+  if(filtered.length === 0){
+    container.innerHTML = `<div class="card">Nenhum projeto encontrado com os filtros aplicados.</div>`;
+  }
+}
+
+/* View project detail (modal) */
+function viewProject(projectId){
+  const p = state.projects.find(x=>x.id===projectId);
+  if(!p) return alert('Projeto não encontrado');
+  const clientName = getClientName(p.clientId) || '(não definido)';
+  const orcName = getOrcName(p.orcId) || '(não definido)';
+  const created = new Date(p.createdAt).toLocaleString();
+  const updated = new Date(p.updatedAt).toLocaleString();
+
+  const indicesHtml = state.indices.map(idx=>{
+    const w = p.indexWeights ? (p.indexWeights[idx.id]||0) : 0;
+    return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="width:130px;font-weight:700;">${idx.name}</div>
+      <div style="flex:1;">
+        <div class="bar"><i style="width:${Math.min(100, w)}%"></i></div>
+      </div>
+      <div style="width:60px;text-align:right;font-weight:700;">${w}%</div>
+    </div>`;
+  }).join('');
+
+  // All suppliers with their scores & small bar
+  const supplierRows = (p.supplierResults || []).map(r=>`
+    <div class="supplier-row">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="font-weight:700;">${r.supplierName}</div>
+        <div class="small-muted">ID: ${r.supplierId}</div>
+      </div>
+      <div style="min-width:220px;max-width:320px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;">
+            <div class="bar"><i style="width:${r.score}%"></i></div>
+          </div>
+          <div style="width:50px;text-align:right;font-weight:700;">${r.score}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // SWOT blocks if present
+  const swotHtml = p.swot && p.swot.enabled ? `
+    <div style="margin-top:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--sw-yellow);padding:10px;border-radius:8px;color:#000"><strong>Forças</strong><div>${escapeHtml(p.swot.S||'')}</div></div>
+        <div style="background:var(--sw-red);padding:10px;border-radius:8px;color:#000"><strong>Oportunidades</strong><div>${escapeHtml(p.swot.O||'')}</div></div>
+        <div style="background:var(--sw-green);padding:10px;border-radius:8px;color:#000"><strong>Fraquezas</strong><div>${escapeHtml(p.swot.W||'')}</div></div>
+        <div style="background:var(--sw-blue);padding:10px;border-radius:8px;color:#000"><strong>Ameaças</strong><div>${escapeHtml(p.swot.T||'')}</div></div>
+      </div>
+    </div>
+  ` : '';
+
+  openModal('Resumo do Projeto', '', `
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <h3 style="margin:0;">${escapeHtml(p.title)}</h3>
+            <div class="small-muted">${clientName} • Orçamentista: ${orcName}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="pill">${p.priority}</div>
+            <div class="small-muted" style="margin-top:6px;">Status: ${p.status}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <h4 style="margin:0 0 8px 0;">Índices e pesos</h4>
+          ${indicesHtml || '<div class="small-muted">Nenhum índice disponível.</div>'}
+        </div>
+
+        <div style="margin-top:12px;">
+          <h4 style="margin:0 0 8px 0;">Fornecedores incluídos (todos)</h4>
+          <div style="padding:8px;border-radius:8px;background:#fff;">${supplierRows || '<div class="small-muted">Nenhum fornecedor incluído.</div>'}</div>
+        </div>
+
+        ${swotHtml}
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+          <button class="btn ghost" id="closeView">Fechar</button>
+          <button class="btn primary" id="exportProjPDF">Exportar resumo (PDF)</button>
+        </div>
+
+        <div class="small-muted" style="margin-top:8px;">Criado: ${created} • Atualizado: ${updated}</div>
+      </div>
+    </div>
+  `);
+
+  document.getElementById('closeView').onclick = closeModal;
+  document.getElementById('exportProjPDF').onclick = ()=> exportProjectPDF(p.id);
+}
+
+/* Helpers */
+function getClientName(id){ const c = state.clients.find(x=>x.id===id); return c?c.name:''; }
+function getOrcName(id){ const o = state.orc.find(x=>x.id===id); return o?o.name:''; }
+function priorityRank(p){ return p==='Alta'?3: p==='Média'?2:1; }
+function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+/* Dashboard refresh */
+function refreshDashboard(){
+  document.getElementById('dashTotalProjects').textContent = state.projects.length;
+  document.getElementById('dashActive').textContent = state.projects.filter(p=>p.status!=='Concluído').length;
+  document.getElementById('dashCompleted').textContent = state.projects.filter(p=>p.status==='Concluído').length;
+  document.getElementById('dashOrcCount').textContent = state.orc.length;
+  // breakdowns
+  const byPriority = state.projects.reduce((acc,p)=>{ acc[p.priority]= (acc[p.priority]||0)+1; return acc; },{});
+  document.getElementById('priorityBreakdown').textContent = Object.entries(byPriority).map(([k,v])=>`${k}: ${v}`).join(' • ') || '—';
+  const byOrc = state.projects.reduce((acc,p)=>{ acc[p.orcId]= (acc[p.orcId]||0)+1; return acc; },{});
+  const orcText = Object.entries(byOrc).map(([id,v])=> `${getOrcName(id)||'--'}: ${v}`).join(' • ');
+  document.getElementById('orcBreakdown').textContent = orcText || '—';
+}
+
+/* Export project to PDF */
+async function exportProjectPDF(projectId){
+  const project = state.projects.find(p=>p.id===projectId);
+  if(!project) return alert('Projeto não encontrado');
+  // build a printable element
+  const node = document.createElement('div');
+  node.style.padding = '18px';
+  node.style.background = '#ffffff';
+  node.style.width = '1000px';
+  node.style.color = '#000';
+  node.innerHTML = buildProjectPrintHtml(project);
+  document.body.appendChild(node);
+  // use html2canvas
+  try{
+    const canvas = await html2canvas(node, {scale:2});
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','pt','a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    // scale image to page
+    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+    const w = canvas.width * ratio;
+    const h = canvas.height * ratio;
+    pdf.addImage(imgData, 'PNG', (pageWidth - w)/2, 20, w, h);
+    pdf.save(`${project.title.replaceAll(/[^a-z0-9]/gi,'_') || 'projeto'}.pdf`);
+  } catch(err){
+    alert('Erro ao gerar PDF: '+err.message);
+  } finally {
+    node.remove();
+  }
+}
+
+/* Export dashboard PDF (resumido) */
+async function exportDashboardPDF(){
+  const node = document.createElement('div');
+  node.style.padding='18px'; node.style.background='#fff'; node.style.width='1000px'; node.style.color='#000';
+  node.innerHTML = `<h2>Relatório Resumido — Dashboard</h2>
+    <div><strong>Projetos totais:</strong> ${state.projects.length}</div>
+    <div><strong>Projetos ativos:</strong> ${state.projects.filter(p=>p.status!=='Concluído').length}</div>
+    <div><strong>Projetos concluídos:</strong> ${state.projects.filter(p=>p.status==='Concluído').length}</div>
+    <div style="margin-top:12px;"><strong>Projetos:</strong></div>
+    ${state.projects.slice(0,50).map(p=>`<div style="margin-top:8px;padding:8px;border:1px solid #eee;border-radius:8px;">
+      <div style="font-weight:700">${escapeHtml(p.title)}</div>
+      <div class="small-muted">Cliente: ${escapeHtml(getClientName(p.clientId)||'--')} • Orçamentista: ${escapeHtml(getOrcName(p.orcId)||'--')} • Prioridade: ${p.priority} • Status: ${p.status}</div>
+    </div>`).join('')}
+  `;
+  document.body.appendChild(node);
+  try{
+    const canvas = await html2canvas(node, {scale:2});
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','pt','a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+    const w = canvas.width * ratio;
+    const h = canvas.height * ratio;
+    pdf.addImage(imgData, 'PNG', (pageWidth - w)/2, 20, w, h);
+    pdf.save('dashboard_resumido.pdf');
+  } catch(err){
+    alert('Erro ao gerar PDF: '+err.message);
+  } finally {
+    node.remove();
+  }
+}
+
+/* Build printable HTML for project */
+function buildProjectPrintHtml(p){
+  const clientName = getClientName(p.clientId) || '(não definido)';
+  const orcName = getOrcName(p.orcId) || '(não definido)';
+  const indicesHtml = state.indices.map(idx=>{
+    const w = p.indexWeights ? (p.indexWeights[idx.id]||0) : 0;
+    return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <div style="width:180px;font-weight:700;">${escapeHtml(idx.name)}</div>
+      <div style="flex:1;"><div style="height:10px;background:#f1f5f9;border-radius:6px"><div style="height:10px;background:#3b82f6;width:${w}%"></div></div></div>
+      <div style="width:60px;text-align:right;font-weight:700;">${w}%</div>
+    </div>`;
+  }).join('');
+  const supplierRows = (p.supplierResults || []).map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #eee;">
+      <div><strong>${escapeHtml(r.supplierName)}</strong></div>
+      <div style="width:200px;"><div style="height:10px;background:#f1f5f9;border-radius:6px"><div style="height:10px;background:#3b82f6;width:${r.score}%"></div></div></div>
+      <div style="width:40px;text-align:right;">${r.score}</div>
+    </div>
+  `).join('');
+  const swotHtml = p.swot && p.swot.enabled ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+      <div style="background:var(--sw-yellow);padding:8px;border-radius:6px;color:#000"><strong>Forças</strong><div>${escapeHtml(p.swot.S||'')}</div></div>
+      <div style="background:var(--sw-red);padding:8px;border-radius:6px;color:#000"><strong>Oportunidades</strong><div>${escapeHtml(p.swot.O||'')}</div></div>
+      <div style="background:var(--sw-green);padding:8px;border-radius:6px;color:#000"><strong>Fraquezas</strong><div>${escapeHtml(p.swot.W||'')}</div></div>
+      <div style="background:var(--sw-blue);padding:8px;border-radius:6px;color:#000"><strong>Ameaças</strong><div>${escapeHtml(p.swot.T||'')}</div></div>
+    </div>
+  ` : '';
+
+  return `
+    <h1>${escapeHtml(p.title)}</h1>
+    <div><strong>Cliente:</strong> ${escapeHtml(clientName)}</div>
+    <div><strong>Orçamentista:</strong> ${escapeHtml(orcName)}</div>
+    <div><strong>Prioridade:</strong> ${p.priority} • <strong>Status:</strong> ${p.status}</div>
+    <h3 style="margin-top:12px;">Índices e pesos</h3>
+    ${indicesHtml}
+    <h3 style="margin-top:12px;">Fornecedores</h3>
+    ${supplierRows}
+    ${swotHtml}
+  `;
+}
+
+/* Initial render */
+refreshAll();
+
+/* Helper: escape regex usage for file names */
+String.prototype.replaceAll = function(search, replacement) {
+  if (search instanceof RegExp) return this.replace(search, replacement);
+  return this.split(search).join(replacement);
+};
+
+/* Export full project list for debugging (not shown) */
+window._dumpData = ()=>({
+  orc: state.orc, clients: state.clients, indices: state.indices, suppliers: state.suppliers, projects: state.projects
+});
+
+</script>
+</body>
+</html>
+```
